@@ -49,6 +49,7 @@ export default function Backups() {
     const [tableCols, setTableCols] = useState([]);
     const [tableData, setTableData] = useState([]);
     const [isBusy, setBusy] = useState(true);
+    
 
     // changing checked status for Department Tags
     const toggleDeptFilter = (id) => {
@@ -62,6 +63,7 @@ export default function Backups() {
 
     const tableTitleFormatting = (columns) => {
         setTableCols([{title: "Department", dataIndex: "department", key: "department"},
+        
         {title: "Environment", dataIndex: "environment", key: "environment"},
         ...columns.map((column) => ({
             title: column,
@@ -74,13 +76,14 @@ export default function Backups() {
         if (!isBusy) {
             let dataKey = 0;
             let dataArray = [];
-            console.log(data);
+            //console.log(data);
             data.forEach((array) => {
                 let obj = {}
                 obj["key"] = dataKey;
-                console.log(columns[1]);
+                console.log(columns);
+                
                 for(let i = 0; i < array.length; i++) {
-                    obj[columns[i].key] = array[i];
+                    obj[columns[i]].key = array[i];
                 }
                 dataArray.push(obj);
                 dataKey += 1;
@@ -110,6 +113,8 @@ export default function Backups() {
             })
             
             tableTitleFormatting(backup.data['columns']);
+            
+            
             tableDataFormatting(backup.data['content'], tableCols);
         }
     }
@@ -136,23 +141,29 @@ export default function Backups() {
             .then((res) => setBackup(res))
             .finally(() => {
                 setBusy(false);
-            })  
+            }) 
         
         //filterChange();
     }
     
     useEffect(() => {
-        setDefault();
+        setBusy(true);
+        getAllBackups()
+            .catch((err) => console.log(err))
+            .then((res) => setBackup(res))
+            .finally(() => {
+                setBusy(false);
+            })
         
         //filterChange();
     }, []);
-    
+    /*
     useEffect(() => {
         if (!isBusy) {
             filterChange();
         }
-    }, [backup]);
-    
+    }, [isBusy]);
+    */
     
     return (
         
@@ -178,7 +189,11 @@ export default function Backups() {
                 <p style={{margin: "auto", fontWeight: "bold"}}>Backups Preview</p>
             </Row>
             <Row>
-                <Table style={{margin: "auto"}} dataSource={tableData} columns={tableCols.slice(0,4)}/>
+                <Table 
+                    style={{margin: "auto"}} 
+                    dataSource={tableData} 
+                    columns={tableCols.slice(0,4)}
+                />
             </Row>
             <Row>
                 <Form style={{margin: "20px auto"}}>
