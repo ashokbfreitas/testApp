@@ -46,6 +46,8 @@ export default function Backups() {
     ]);
     const [tableCols, setTableCols] = useState([]);
     const [tableData, setTableData] = useState([]);
+    const [apiBusy, setApiBusy] = useState(true);
+    const [tableBusy, setTableBusy] = useState(true);
 
     // changing checked status for Department Tags
     const toggleDeptFilter = (id) => {
@@ -68,13 +70,14 @@ export default function Backups() {
     }
 
     const tableDataFormatting = (data, columns) => {
+        
         let dataKey = 0;
         let dataArray = [];
-        console.log(data);
+        //console.log(data);
         data.forEach((array) => {
             let obj = {}
             obj["key"] = dataKey;
-            console.log(columns[1]);
+            //console.log(columns[1]);
             for(let i = 0; i < array.length; i++) {
                 obj[columns[i].key] = array[i];
             }
@@ -100,7 +103,7 @@ export default function Backups() {
             envString = "environment=" + envFilterWords.join(",");
         }
         getFilteredData(deptString, envString).then((res) => {
-            setBackup(res.body);
+            setBackup(res);
         })
         
         tableTitleFormatting(backup.data['columns']);
@@ -129,14 +132,34 @@ export default function Backups() {
         
         //filterChange();
     }
+
+    useEffect(() => {
+        setApiBusy(true);
+        getAllBackups()
+            .catch((err) => console.log(err))
+            .then((res) => setBackup(res))
+            .finally(() => {
+                setApiBusy(false);
+            })
+    }, []);
     
     useEffect(() => {
-        setDefault();
-        
-        //filterChange();
-    });
+        if (! apiBusy) {
+            tableTitleFormatting(backup.data['columns']);
+            setTableBusy(false);
+        }
+    }, [apiBusy]);
+
+    useEffect(() => {
+        if (!apiBusy) {
+            if (!tableBusy) {
+                tableDataFormatting(backup.data['content'], tableCols);
+            }
+           
+        }
+    }, [tableBusy]);
     
-    
+    //console.log(backup);
     return (
         
         <Container>
