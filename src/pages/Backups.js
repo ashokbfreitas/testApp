@@ -48,6 +48,7 @@ export default function Backups() {
     ]);
     const [tableCols, setTableCols] = useState([]);
     const [tableData, setTableData] = useState([]);
+    const [isBusy, setBusy] = useState(true);
 
     // changing checked status for Department Tags
     const toggleDeptFilter = (id) => {
@@ -70,43 +71,47 @@ export default function Backups() {
     }
 
     const tableDataFormatting = (data, columns) => {
-        let dataKey = 0;
-        let dataArray = [];
-        console.log(data);
-        data.forEach((array) => {
-            let obj = {}
-            obj["key"] = dataKey;
-            console.log(columns[1]);
-            for(let i = 0; i < array.length; i++) {
-                obj[columns[i].key] = array[i];
-            }
-            dataArray.push(obj);
-            dataKey += 1;
-        })
-        setTableData(dataArray);
+        if (!isBusy) {
+            let dataKey = 0;
+            let dataArray = [];
+            console.log(data);
+            data.forEach((array) => {
+                let obj = {}
+                obj["key"] = dataKey;
+                console.log(columns[1]);
+                for(let i = 0; i < array.length; i++) {
+                    obj[columns[i].key] = array[i];
+                }
+                dataArray.push(obj);
+                dataKey += 1;
+            })
+            setTableData(dataArray);
+        }
     }
 
 
     // applying filters and generating the URL
     const filterChange = () => {
-        const deptFilterWords = [];
-        const envFilterWords = [];
-        let deptString = "";
-        let envString = "";
-        deptTags.forEach( tag => tag.selected && deptFilterWords.push(tag.tag));
-        envTags.forEach( tag => tag.selected && envFilterWords.push(tag.tag));
-        if(deptFilterWords.length > 0) {
-            deptString = "department=" + deptFilterWords.join(",");
+        if (!isBusy) {
+            const deptFilterWords = [];
+            const envFilterWords = [];
+            let deptString = "";
+            let envString = "";
+            deptTags.forEach( tag => tag.selected && deptFilterWords.push(tag.tag));
+            envTags.forEach( tag => tag.selected && envFilterWords.push(tag.tag));
+            if(deptFilterWords.length > 0) {
+                deptString = "department=" + deptFilterWords.join(",");
+            }
+            if(envFilterWords.length > 0) {
+                envString = "environment=" + envFilterWords.join(",");
+            }
+            getFilteredData(deptString, envString).then((res) => {
+                setBackup(res.body);
+            })
+            
+            tableTitleFormatting(backup.data['columns']);
+            tableDataFormatting(backup.data['content'], tableCols);
         }
-        if(envFilterWords.length > 0) {
-            envString = "environment=" + envFilterWords.join(",");
-        }
-        getFilteredData(deptString, envString).then((res) => {
-            setBackup(res.body);
-        })
-        
-        tableTitleFormatting(backup.data['columns']);
-        tableDataFormatting(backup.data['content'], tableCols);
     }
     
     /*
@@ -125,9 +130,13 @@ export default function Backups() {
     }
     
     const setDefault = () => {
+        setBusy(true);
         getAllBackups()
             .catch((err) => console.log(err))
-            .then((res) => setBackup(res.body));
+            .then((res) => setBackup(res))
+            .finally(() => {
+                setBusy(false);
+            })  
         
         //filterChange();
     }
@@ -136,9 +145,15 @@ export default function Backups() {
         setDefault();
         
         //filterChange();
-    });
+    }, []);
     
-    //console.log(backup)
+    useEffect(() => {
+        if (!isBusy) {
+            filterChange();
+        }
+    }, [backup]);
+    
+    
     return (
         
         <Container>
