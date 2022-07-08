@@ -9,9 +9,7 @@ import { getAllBackups, getFilteredData } from "../fetcher";
 
 export default function Backups() {
     
-    const [backup, setBackup] = useState([
-        getAllBackups()
-    ]);
+    const [backup, setBackup] = useState([]);
     const [deptTags, setDeptTags] = useState([
         {
             id: 1,
@@ -49,6 +47,7 @@ export default function Backups() {
     const [tableCols, setTableCols] = useState([]);
     const [tableData, setTableData] = useState([]);
     const [isBusy, setBusy] = useState(true);
+    const [tableBusy, setTableBusy] = useState(true);
     
 
     // changing checked status for Department Tags
@@ -83,7 +82,7 @@ export default function Backups() {
                 console.log(columns);
                 
                 for(let i = 0; i < array.length; i++) {
-                    obj[columns[i]].key = array[i];
+                    obj[columns[i].key] = array[i];
                 }
                 dataArray.push(obj);
                 dataKey += 1;
@@ -109,12 +108,10 @@ export default function Backups() {
                 envString = "environment=" + envFilterWords.join(",");
             }
             getFilteredData(deptString, envString).then((res) => {
-                setBackup(res.body);
+                setBackup(res);
             })
             
             tableTitleFormatting(backup.data['columns']);
-            
-            
             tableDataFormatting(backup.data['content'], tableCols);
         }
     }
@@ -157,13 +154,23 @@ export default function Backups() {
         
         //filterChange();
     }, []);
-    /*
+    
     useEffect(() => {
         if (!isBusy) {
-            filterChange();
+            tableTitleFormatting(backup.data['columns']);
+            setTableBusy(false);
         }
     }, [isBusy]);
-    */
+
+    useEffect(() => {
+        if (!isBusy) {
+            if (!tableBusy) {
+                tableDataFormatting(backup.data['content'], tableCols);
+            }
+           
+        }
+    }, [tableBusy]);
+    
     
     return (
         
