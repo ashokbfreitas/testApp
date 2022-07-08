@@ -9,9 +9,7 @@ import { getAllBackups, getFilteredData } from "../fetcher";
 
 export default function Backups() {
     
-    const [backup, setBackup] = useState([
-        getAllBackups()
-    ]);
+    const [backup, setBackup] = useState([]);
     const [deptTags, setDeptTags] = useState([
         {
             id: 1,
@@ -127,7 +125,7 @@ export default function Backups() {
     const setDefault = () => {
         getAllBackups()
             .catch((err) => console.log(err))
-            .then((res) => setBackup(res.body));
+            .then((res) => setBackup(res));
         
         //filterChange();
     }
@@ -138,7 +136,7 @@ export default function Backups() {
         //filterChange();
     });
     
-    //console.log(backup)
+    
     return (
         
         <Container>
